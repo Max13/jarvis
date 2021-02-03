@@ -17,7 +17,9 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
+        "illuminate/bus": "^8.0",
         "illuminate/database": "^8.0",
+        "illuminate/queue": "^8.0",
         "laravel-zero/framework": "^8.4",
         "max13/laravel-sqfix": "^1.0"
     },
