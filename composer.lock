@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b168f0a0448dcd554738d21059e2f15",
+    "content-hash": "1210c9b1e3edb90c9a6a83e2cd4100d4",
     "packages": [
         {
             "name": "brick/math",
@@ -780,6 +780,74 @@
             "time": "2021-01-20T14:18:13+00:00"
         },
         {
+            "name": "illuminate/database",
+            "version": "v8.26.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/database.git",
+                "reference": "4f7a92b9c59175f2f204366b957851029cb8b0c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/database/zipball/4f7a92b9c59175f2f204366b957851029cb8b0c0",
+                "reference": "4f7a92b9c59175f2f204366b957851029cb8b0c0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "illuminate/collections": "^8.0",
+                "illuminate/container": "^8.0",
+                "illuminate/contracts": "^8.0",
+                "illuminate/macroable": "^8.0",
+                "illuminate/support": "^8.0",
+                "php": "^7.3|^8.0",
+                "symfony/console": "^5.1.4"
+            },
+            "suggest": {
+                "doctrine/dbal": "Required to rename columns and drop SQLite columns (^2.6|^3.0).",
+                "fakerphp/faker": "Required to use the eloquent factory builder (^1.9.1).",
+                "illuminate/console": "Required to use the database commands (^8.0).",
+                "illuminate/events": "Required to use the observers with Eloquent (^8.0).",
+                "illuminate/filesystem": "Required to use the migrations (^8.0).",
+                "illuminate/pagination": "Required to paginate the result set (^8.0).",
+                "symfony/finder": "Required to use Eloquent model factories (^5.1.4)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "8.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Database\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Database package.",
+            "homepage": "https://laravel.com",
+            "keywords": [
+                "database",
+                "laravel",
+                "orm",
+                "sql"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2021-02-02T13:42:30+00:00"
+        },
+        {
             "name": "illuminate/events",
             "version": "v8.26.1",
             "source": {
@@ -1468,6 +1536,75 @@
                 }
             ],
             "time": "2021-01-18T20:58:21+00:00"
+        },
+        {
+            "name": "max13/laravel-sqfix",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Max13/laravel-sqfix.git",
+                "reference": "693feb9477f314b87c1b2151b926e1b8e0b8dc16"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Max13/laravel-sqfix/zipball/693feb9477f314b87c1b2151b926e1b8e0b8dc16",
+                "reference": "693feb9477f314b87c1b2151b926e1b8e0b8dc16",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^7.0|^8.0",
+                "php": "^7.3|^7.4|^8.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^6.0",
+                "phpunit/phpunit": "^9.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Mx\\Sqfix\\SqfixServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Mx\\Sqfix\\": "src/Mx/Sqfix"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Adnan RIHAN",
+                    "email": "adnan@rihan.fr",
+                    "homepage": "https://adnan.rihan.fr/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Laravel package fixing SQLite Schema grammar",
+            "homepage": "https://github.com/max13/laravel-sqfix",
+            "keywords": [
+                "laravel-sqfix",
+                "max13"
+            ],
+            "support": {
+                "issues": "https://github.com/Max13/laravel-sqfix/issues",
+                "source": "https://github.com/Max13/laravel-sqfix/tree/v1.0.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/max13",
+                    "type": "github"
+                },
+                {
+                    "url": "https://adnan.rihan.fr/",
+                    "type": "other"
+                }
+            ],
+            "time": "2021-01-13T01:48:39+00:00"
         },
         {
             "name": "nesbot/carbon",
