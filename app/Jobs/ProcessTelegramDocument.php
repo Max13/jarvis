@@ -110,23 +110,51 @@ class ProcessTelegramDocument implements ShouldQueue
 
         $fileUrl = config('telegram.endpoint').'/file/bot'.config('telegram.token').'/'.$res['result']['file_path'];
 
-        $sshFile = base_path('lpuser@kitt_rsa');
-        $tmpFile = $this->download($fileUrl);
+        $documentPath = $this->download($fileUrl);
+        $sshFile = tap(tempnam('', ''), function ($tmp) {
+            file_put_contents($tmp, config('ssh.key'));
+        });
 
         if (App::isProduction()) {
-            exec(
-                "ssh -i $sshFile -o 'UserKnownHostsFile /dev/null' -o 'StrictHostKeyChecking no' lpuser@kitt.home.rihan.fr lp < $tmpFile",
-                $output,
-                $result_code
+            $command = config('ssh.command') . ' lp < ' . escapeshellarg($documentPath);
+            $command = str_replace(
+                [
+                    '{SSH_KEY_FILE}',
+                    '{SSH_PORT}',
+                    '{SSH_USER}',
+                    '{SSH_HOST}',
+                ],
+                [
+                    escapeshellarg($sshFile),
+                    escapeshellarg(config('ssh.port')),
+                    escapeshellarg(config('ssh.user')),
+                    escapeshellarg(config('ssh.host')),
+                ],
+                $command
+            );
+
+            file_put_contents(
+                __DIR__.'/../../log.log',
+                $command.PHP_EOL,
+                FILE_APPEND
+            );
+
+            exec($command, $output, $result_code);
+
+            file_put_contents(
+                __DIR__.'/../../log.log',
+                $result_code.' - '.json_encode($output).PHP_EOL.PHP_EOL,
+                FILE_APPEND
             );
         } else {
             $result_code = 0;
+            $output = [];
         }
 
         throw_if(
             $result_code !== 0,
             RuntimeException::class,
-            implode(PHP_EOL, $output ?? [])
+            implode(PHP_EOL, $output)
         );
 
         Http::post(
