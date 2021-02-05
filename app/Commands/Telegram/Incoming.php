@@ -3,6 +3,7 @@
 namespace App\Commands\Telegram;
 
 use App\Jobs\ProcessTelegramDocument;
+use App\Models\Telegram\Document;
 use App\Models\Telegram\User;
 use Illuminate\Support\Facades\Http;
 use LaravelZero\Framework\Commands\Command;
@@ -48,14 +49,25 @@ class Incoming extends Command
         );
 
         if (isset($payload['message']['document'])) {
-            ProcessTelegramDocument::dispatch($user, $payload);
+            $document = Document::create([
+                'telegram_user_id' => $user->id,
+                'chat_id' => $payload['message']['chat']['id'],
+                'message_id' => $payload['message']['message_id'],
+                'file_id' => $payload['message']['document']['file_id'],
+                'file_unique_id' => $payload['message']['document']['file_unique_id'],
+                'filename' => $payload['message']['document']['file_name'],
+                'mime' => $payload['message']['document']['mime_type'],
+                'size' => $payload['message']['document']['file_size'],
+            ]);
+
+            ProcessTelegramDocument::dispatch($document);
 
             Http::post(
                 config('telegram.endpoint').'/bot'.config('telegram.token').'/sendmessage',
                 [
-                    'chat_id' => $payload['message']['chat']['id'],
+                    'chat_id' => $document->chat_id,
                     'text' => 'Accepted',
-                    'reply_to_message_id' => $payload['message']['message_id'],
+                    'reply_to_message_id' => $document->message_id,
                     'allow_sending_without_reply' => true,
                 ]
             );

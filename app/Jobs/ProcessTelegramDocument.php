@@ -3,12 +3,13 @@
 namespace App\Jobs;
 
 use App\Exceptions\Telegram\UserNotAllowedException;
-use App\Models\Telegram\User;
+use App\Models\Telegram\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use Throwable;
@@ -32,30 +33,21 @@ class ProcessTelegramDocument implements ShouldQueue
     public $tries = 5;
 
     /**
-     * Payload received from Telegram
+     * Document received
      *
-     * @var array
+     * @var \App\Models\Telegram\Document
      */
-    protected $payload;
-
-    /**
-     * User sending the document
-     *
-     * @var \App\Models\Telegram\User
-     */
-    protected $user;
+    protected $document;
 
     /**
      * Create a new job instance.
      *
-     * @param  \App\Models\Telegram\User $user
-     * @param  array                     $payload
+     * @param  \App\Models\Telegram\Document $document
      * @return void
      */
-    public function __construct(User $user, array $payload)
+    public function __construct(Document $document)
     {
-        $this->user = $user;
-        $this->payload = $payload;
+        $this->document = $document;
     }
 
     /**
@@ -100,7 +92,7 @@ class ProcessTelegramDocument implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->user->is_pending) {
+        if ($this->document->user->is_pending) {
             // If we haven't attempted max tries, release for 5 min
             if ($this->attempts() < $this->tries) {
                 return $this->release(60 * 5);
@@ -112,7 +104,7 @@ class ProcessTelegramDocument implements ShouldQueue
         $res = Http::get(
             config('telegram.endpoint').'/bot'.config('telegram.token').'/getfile',
             [
-                'file_id' => $this->payload['message']['document']['file_id'],
+                'file_id' => $this->document->file_id,
             ]
         );
 
@@ -121,29 +113,33 @@ class ProcessTelegramDocument implements ShouldQueue
         $sshFile = base_path('lpuser@kitt_rsa');
         $tmpFile = $this->download($fileUrl);
 
-        exec(
-            "ssh -i $sshFile -o 'UserKnownHostsFile /dev/null' -o 'StrictHostKeyChecking no' lpuser@kitt.home.rihan.fr lp < $tmpFile",
-            $output,
-            $result_code
-        );
+        if (App::isProduction()) {
+            exec(
+                "ssh -i $sshFile -o 'UserKnownHostsFile /dev/null' -o 'StrictHostKeyChecking no' lpuser@kitt.home.rihan.fr lp < $tmpFile",
+                $output,
+                $result_code
+            );
+        } else {
+            $result_code = 0;
+        }
 
         throw_if(
             $result_code !== 0,
             RuntimeException::class,
-            implode(PHP_EOL, $output)
+            implode(PHP_EOL, $output ?? [])
         );
 
-        if ($result_code === 0) {
-            Http::post(
-                config('telegram.endpoint').'/bot'.config('telegram.token').'/sendmessage',
-                [
-                    'chat_id' => $this->payload['message']['chat']['id'],
-                    'text' => 'Sent to the printer',
-                    'reply_to_message_id' => $this->payload['message']['message_id'],
-                    'allow_sending_without_reply' => true,
-                ]
-            );
-        }
+        Http::post(
+            config('telegram.endpoint').'/bot'.config('telegram.token').'/sendmessage',
+            [
+                'chat_id' => $this->document->chat_id,
+                'text' => 'Sent to the printer',
+                'reply_to_message_id' => $this->document->message_id,
+                'allow_sending_without_reply' => true,
+            ]
+        );
+
+        $this->document->delete();
     }
 
     /**
@@ -157,9 +153,9 @@ class ProcessTelegramDocument implements ShouldQueue
         Http::post(
             config('telegram.endpoint').'/bot'.config('telegram.token').'/sendmessage',
             [
-                'chat_id' => $this->payload['message']['chat']['id'],
+                'chat_id' => $this->document->chat_id,
                 'text' => $exception->getMessage(),
-                'reply_to_message_id' => $this->payload['message']['message_id'],
+                'reply_to_message_id' => $this->document->message_id,
                 'allow_sending_without_reply' => true,
             ]
         );
