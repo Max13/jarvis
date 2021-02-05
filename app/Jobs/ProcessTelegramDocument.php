@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Telegram\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,12 +38,22 @@ class ProcessTelegramDocument implements ShouldQueue
     protected $payload;
 
     /**
+     * User sending the document
+     *
+     * @var \App\Models\Telegram\User
+     */
+    protected $user;
+
+    /**
      * Create a new job instance.
      *
+     * @param  \App\Models\Telegram\User $user
+     * @param  array                     $payload
      * @return void
      */
-    public function __construct(array $payload)
+    public function __construct(User $user, array $payload)
     {
+        $this->user = $user;
         $this->payload = $payload;
     }
 
@@ -88,6 +99,11 @@ class ProcessTelegramDocument implements ShouldQueue
      */
     public function handle()
     {
+        if ($this->user->is_pending) {
+            $this->release(60 * 5);
+            return;
+        }
+
         $res = Http::get(
             config('telegram.endpoint').'/bot'.config('telegram.token').'/getfile',
             [

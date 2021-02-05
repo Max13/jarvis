@@ -3,6 +3,7 @@
 namespace App\Commands\Telegram;
 
 use App\Jobs\ProcessTelegramDocument;
+use App\Models\Telegram\User;
 use Illuminate\Support\Facades\Http;
 use LaravelZero\Framework\Commands\Command;
 
@@ -31,15 +32,23 @@ class Incoming extends Command
     {
         $payload = json_decode($this->argument('payload'), true);
 
-        if (
-               is_null($payload)
-            || !in_array($payload['message']['from']['id'], config('telegram.allowed'))
-        ) {
+        if (is_null($payload) || !isset($payload['message']['from']['id'])) {
             return 1;
         }
 
+        $user = User::updateOrCreate(
+            [
+                'id' => $payload['message']['from']['id'],
+            ],
+            [
+                'firstname' => $payload['message']['from']['first_name'] ?? null,
+                'lastname' => $payload['message']['from']['last_name'] ?? null,
+                'username' => $payload['message']['from']['username'] ?? null,
+            ]
+        );
+
         if (isset($payload['message']['document'])) {
-            ProcessTelegramDocument::dispatch($payload);
+            ProcessTelegramDocument::dispatch($user, $payload);
 
             Http::post(
                 config('telegram.endpoint').'/bot'.config('telegram.token').'/sendmessage',
