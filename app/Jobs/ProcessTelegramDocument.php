@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\Telegram\UserNotAllowedException;
 use App\Models\Telegram\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -100,8 +101,12 @@ class ProcessTelegramDocument implements ShouldQueue
     public function handle()
     {
         if ($this->user->is_pending) {
-            $this->release(60 * 5);
-            return;
+            // If we haven't attempted max tries, release for 5 min
+            if ($this->attempts() < $this->tries) {
+                return $this->release(60 * 5);
+            }
+
+            throw new UserNotAllowedException('You are not allowed to use this bot');
         }
 
         $res = Http::get(
