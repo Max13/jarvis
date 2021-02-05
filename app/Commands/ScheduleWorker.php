@@ -39,7 +39,7 @@ class ScheduleWorker extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        $schedule->command('queue:work --tries=3 --stop-when-empty')
+        $schedule->command('queue:work --backoff=60 --tries=3 --stop-when-empty')
                  ->withoutOverlapping()
                  ->everyMinute();
     }
