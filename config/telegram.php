@@ -16,6 +16,6 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'token' => '1619767073:AAHiECiiLoO143_j2Oll17ArW_UnINC7YmE',
+    'token' => env('TELEGRAM_TOKEN'),
 
 ];
